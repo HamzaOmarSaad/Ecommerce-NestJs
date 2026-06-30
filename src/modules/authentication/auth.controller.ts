@@ -6,11 +6,14 @@ import {
   HttpException,
   ParseIntPipe,
   Post,
+  Query,
   Req,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
+import { loginDTO, signupDTO } from './dto/auth.dto';
 import { CustomValidationPipe } from 'src/common/pipes/validation.pipe';
-import { loginSchema, signupSchema } from './auth.validation';
-import type { loginDTO, signupDTO } from './dto/auth.dto';
+import { loginSchema } from './auth.validation';
 
 @Controller('/auth')
 export class authController {
@@ -33,14 +36,28 @@ export class authController {
     console.log('🚀  ~ hello ~ req:', req, age);
     return 'hello';
   }
-  @Post('/signup')
+  // validation pipe
+  @UsePipes(
+    new ValidationPipe({
+      stopAtFirstError: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  )
+  @Get('/welcome')
   signup(
-    @Body(new CustomValidationPipe<signupDTO>(signupSchema.body))
+    @Body()
     body: signupDTO,
+    @Query()
+    query: signupDTO,
   ) {
+    console.log(query);
+
     return this.authService.signup(body);
   }
-  @Post('/login')
+
+  // custom validation with zod
+  @Post('/wel')
   login(
     @Body(new CustomValidationPipe<loginDTO>(loginSchema.body)) body: loginDTO,
   ) {

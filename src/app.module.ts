@@ -2,17 +2,49 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { authModule } from './modules/authentication/auth.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ProductsModule } from './modules/products/products.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { OrderModule } from './modules/order/order.module';
 import { UsersModule } from './modules/users/users.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Connection } from 'mongoose';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       envFilePath: ['.env.dev', '.env.prod'],
     }),
+    ///* .config dont work here */
+    // MongooseModule.forRoot(process.env.DB_URI as string, {
+    //   onConnectionCreate: (connection: Connection) => {
+    //     connection.on('connected', () => console.log('connected'));
+    //     connection.on('open', () => console.log('open'));
+    //     connection.on('disconnected', () => console.log('disconnected'));
+    //     connection.on('reconnected', () => console.log('reconnected'));
+    //     connection.on('disconnecting', () => console.log('disconnecting'));
+
+    //     return connection;
+    //   },
+    // }),
+
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        uri: configService.get<string>('DB_URI'),
+        onConnectionCreate: (connection: Connection) => {
+          connection.on('connected', () => console.log('connected'));
+          connection.on('open', () => console.log('open'));
+          connection.on('disconnected', () => console.log('disconnected'));
+          connection.on('reconnected', () => console.log('reconnected'));
+          connection.on('disconnecting', () => console.log('disconnecting'));
+
+          return connection;
+        },
+      }),
+      inject: [ConfigService],
+    }),
+
     authModule,
     UsersModule,
     ProductsModule,
