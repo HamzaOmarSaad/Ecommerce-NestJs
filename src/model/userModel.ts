@@ -25,12 +25,12 @@ export class User implements IUser {
     required: true,
   })
   firstName!: string;
+
   @Prop({
     type: String,
     required: true,
   })
   lastName!: string;
-
   @Virtual({
     set: function (this: HUser, value: string) {
       const [firstName, lastName] = value.split(' ') || [];
@@ -41,6 +41,7 @@ export class User implements IUser {
       return `${this.firstName} ${this.lastName} `;
     },
   })
+  fullName!: string;
   @Prop({
     type: String,
     required: true,
@@ -87,15 +88,20 @@ export class User implements IUser {
   profilePicture?: string;
 
   @Prop({
-    type: [{ type: String }],
+    type: Date,
   })
   isEmailConfirmed?: Date | undefined;
 
   @Prop({
-    type: Boolean,
+    type: Date,
     default: false,
   })
-  isDeleted?: boolean;
+  deletedAt?: Date | undefined;
+  @Prop({
+    type: Date,
+    default: false,
+  })
+  changedCredentialsTime?: Date | undefined;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
@@ -166,8 +172,9 @@ const UserModel = MongooseModule.forFeatureAsync([
           });
         }
       });
+      return UserSchema;
     },
-    inject: [securityModule],
+    inject: [securityService],
   },
 ]);
 

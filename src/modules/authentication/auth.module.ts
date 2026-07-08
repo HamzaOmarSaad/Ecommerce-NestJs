@@ -1,13 +1,18 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
+import { defaultLang } from 'src/common/middleware';
+import { EmailService } from 'src/common/shared/email/email.service';
+import { securityService } from 'src/common/shared/security/security.service';
 import { authController } from './auth.controller';
 import { authService } from './auth.service';
-import UserModel from 'src/model/userModel';
-import { UserRepo } from 'src/common/repos';
 
 @Module({
-  imports: [UserModel],
-  exports: [authService],
+  imports: [],
+  exports: [],
   controllers: [authController],
-  providers: [authService, UserRepo],
+  providers: [authService, EmailService, securityService],
 })
-export class authModule {}
+export class authModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(defaultLang).forRoutes(authController);
+  }
+}

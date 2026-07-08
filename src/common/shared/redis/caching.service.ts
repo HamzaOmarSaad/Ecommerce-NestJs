@@ -1,38 +1,27 @@
-import { createClient, RedisClientType } from "redis";
-import { REDIS_DB_NAME, REDIS_DB_URI } from "../../env/config";
-import { badReqException } from "../res/exceptions/domain.exceptions";
-import { emailEnum, redisPurposeEnum } from "../../Enums/enums";
-import { Types } from "mongoose";
-// singleton pattern
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import type { RedisClientType } from '@redis/client';
+import { Types } from 'mongoose';
+import { emailEnum, redisPurposeEnum } from 'src/common/Enums/enums';
+
 type redisOtpType = {
   email: string;
   subject: emailEnum;
 };
-export class redisServices {
-  private readonly redisClient: RedisClientType;
-  constructor() {
-    this.redisClient = createClient({
-      url: REDIS_DB_URI,
-      database: REDIS_DB_NAME,
-    });
+@Injectable()
+export class CacheService {
+  constructor(
+    @Inject('REDIS_CLIENT') private readonly redisClient: RedisClientType,
+  ) {
     this.handleEvents();
   }
 
-  public connectRedisDB = async () => {
-    try {
-      await this.redisClient.connect();
-      console.log("🚀 ~ redis connected successfully");
-    } catch (error) {
-      console.log("🚀 ~ redis connectDB ~ error:", error);
-    }
-  };
-
   private handleEvents() {
-    this.redisClient.on("error", (error) => {
-      console.log("🚀 ~ redisServices ~ handleEvents ~ error:", error);
+    this.redisClient.on('error', (error) => {
+      console.log('🚀 ~ redisServices ~ handleEvents ~ error:', error);
     });
-    this.redisClient.on("ready", () => {
-      console.log("🚀 ~ redisServices ~ handleEvents ~ ready");
+    this.redisClient.on('ready', () => {
+      console.log('🚀 ~ redisServices ~ handleEvents ~ ready');
     });
   }
 
@@ -89,13 +78,13 @@ export class redisServices {
       const data = JSON.stringify(value);
       if (ttl) {
         return await this.redisClient.set(key, data, {
-          expiration: { value: ttl, type: "EX" },
+          expiration: { value: ttl, type: 'EX' },
         });
       } else {
         return await this.redisClient.set(key, data);
       }
     } catch (err) {
-      console.log("🚀 ~ redisServices ~ err:", err);
+      console.log('🚀 ~ redisServices ~ err:', err);
       return null;
     }
   };
@@ -105,7 +94,7 @@ export class redisServices {
       if (!data) return null;
       return JSON.parse(data) as T;
     } catch {
-      throw new badReqException("Redis get error");
+      throw new BadRequestException('Redis get error');
     }
   }
   public updateValue = async ({
@@ -124,7 +113,7 @@ export class redisServices {
       }
       return await this.setValue({ key, value: newValue, ttl });
     } catch (error) {
-      throw new badReqException("redis set Error");
+      throw new BadRequestException('redis set Error' + error);
     }
   };
   public deleteValue = async ({
@@ -136,7 +125,7 @@ export class redisServices {
       const data = await this.redisClient.del(key);
       return data;
     } catch (error) {
-      throw new badReqException("redis set Error");
+      throw new BadRequestException('redis set Error' + error);
     }
   };
 
@@ -151,7 +140,7 @@ export class redisServices {
       const data = await this.redisClient.expire(key, ttl);
       return data;
     } catch (error) {
-      throw new badReqException("redis set Error");
+      throw new BadRequestException('redis set Error' + error);
     }
   };
 
@@ -159,7 +148,7 @@ export class redisServices {
     try {
       return await this.redisClient.ttl(key);
     } catch (error) {
-      throw new badReqException("redis set Error");
+      throw new BadRequestException('redis set Error' + error);
     }
   };
 
@@ -167,24 +156,21 @@ export class redisServices {
     try {
       return await this.redisClient.incr(key);
     } catch (error) {
-      throw new badReqException("redis incr Error");
+      throw new BadRequestException('redis incr Error' + error);
     }
   }
   public async exist(key: string): Promise<number> {
     try {
       return await this.redisClient.exists(key);
     } catch (error) {
-      throw new badReqException("redis exist Error" + error);
+      throw new BadRequestException('redis exist Error' + error);
     }
   }
   public GetByPrefix = async (pattern: string): Promise<string[]> => {
     try {
       return await this.redisClient.keys(pattern);
     } catch (error) {
-      throw new badReqException("redis GetByPrefix Error");
+      throw new BadRequestException('redis GetByPrefix Error' + error);
     }
   };
 }
-const redisService = new redisServices();
-
-export default redisService;

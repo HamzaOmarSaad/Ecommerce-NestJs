@@ -1,11 +1,37 @@
-export const email_template = ({
-  message,
-  title,
-}: {
-  message: string;
-  title: string;
-}): string => {
-  return `<!DOCTYPE html>
+import * as nodemailer from 'nodemailer';
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+interface SendEmailOptions {
+  to: string;
+  cc?: string;
+  subject: string;
+  html: string;
+}
+
+@Injectable()
+export class EmailService {
+  private APP_EMAIL: string;
+  private APP_NAME: string;
+  private APP_EMAIL_PASSWORD: string;
+
+  constructor(private readonly configService: ConfigService) {
+    this.APP_EMAIL = this.configService.get('EMAIL') as string;
+    this.APP_EMAIL_PASSWORD = this.configService.get<string>(
+      'EMAIL_PASS',
+    ) as string;
+    this.APP_NAME = this.configService.get<string>(
+      'APPLICATION_NAME',
+    ) as string;
+  }
+  email_template({
+    message,
+    title,
+  }: {
+    message: string;
+    title: string;
+  }): string {
+    return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -46,7 +72,7 @@ export const email_template = ({
 
               <p style="margin-top:30px;">
                 Best regards,<br>
-                saraha Team
+                ${this.APP_NAME} Team
               </p>
             </td>
           </tr>
@@ -66,4 +92,35 @@ export const email_template = ({
 
 </body>
 </html>`;
-};
+  }
+  async sendEmailService({
+    to,
+    cc,
+    subject,
+    html,
+  }: SendEmailOptions): Promise<nodemailer.SentMessageInfo> {
+    try {
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: this.APP_EMAIL,
+          pass: this.APP_EMAIL_PASSWORD,
+        },
+      });
+      const info = await transporter.sendMail({
+        from: `${this.APP_NAME}  <${this.APP_EMAIL}>`,
+        to,
+        cc,
+        subject,
+        html,
+      });
+
+      console.log('Email sent:', info.accepted);
+
+      return info;
+    } catch (error) {
+      console.error('Email sending failed:', error);
+      throw error;
+    }
+  }
+}

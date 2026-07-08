@@ -9,12 +9,16 @@ import { OrderModule } from './modules/order/order.module';
 import { UsersModule } from './modules/users/users.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { SharedAuthModule } from './common/modules';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       envFilePath: ['.env.dev', '.env.prod'],
+      isGlobal: true,
     }),
+    EventEmitterModule.forRoot(),
     ///* .config dont work here */
     // MongooseModule.forRoot(process.env.DB_URI as string, {
     //   onConnectionCreate: (connection: Connection) => {
@@ -44,7 +48,7 @@ import { Connection } from 'mongoose';
       }),
       inject: [ConfigService],
     }),
-
+    SharedAuthModule,
     authModule,
     UsersModule,
     ProductsModule,

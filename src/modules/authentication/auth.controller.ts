@@ -1,66 +1,96 @@
 import { authService } from './auth.service';
-import {
-  Body,
-  Controller,
-  Get,
-  HttpException,
-  ParseIntPipe,
-  Post,
-  Query,
-  Req,
-  UsePipes,
-  ValidationPipe,
-} from '@nestjs/common';
-import { loginDTO, signupDTO } from './dto/auth.dto';
-import { CustomValidationPipe } from 'src/common/pipes/validation.pipe';
-import { loginSchema } from './auth.validation';
+import { Body, Controller, Post, Req, Res } from '@nestjs/common';
+import { loginDTO, signupDTO, signupWithGmailDTO } from './dto/auth.dto';
+import type { Request, Response } from 'express';
 
 @Controller('/auth')
 export class authController {
   constructor(private readonly authService: authService) {}
-  @Get('/')
-  hello(
-    @Req() req: Request,
-    @Body(
-      'age',
-      new ParseIntPipe({
-        errorHttpStatusCode: 401,
-        exceptionFactory() {
-          throw new HttpException('bad request', 400);
-        },
-        optional: true,
-      }),
-    )
-    age: number,
-  ) {
-    console.log('🚀  ~ hello ~ req:', req, age);
-    return 'hello';
-  }
-  // validation pipe
-  @UsePipes(
-    new ValidationPipe({
-      stopAtFirstError: true,
-      whitelist: true,
-      forbidNonWhitelisted: true,
-    }),
-  )
-  @Get('/welcome')
+
+  @Post('/signup')
   signup(
     @Body()
     body: signupDTO,
-    @Query()
-    query: signupDTO,
   ) {
-    console.log(query);
-
-    return this.authService.signup(body);
+    return this.authService.Signup(body);
   }
-
-  // custom validation with zod
-  @Post('/wel')
-  login(
-    @Body(new CustomValidationPipe<loginDTO>(loginSchema.body)) body: loginDTO,
+  @Post('/login')
+  async login(
+    @Body()
+    body: loginDTO,
+    @Req() req: Request,
   ) {
-    return this.authService.login(body);
+    return {
+      message: 'done',
+      data: await this.authService.login(body, `${req.protocol}://${req.host}`),
+    };
+  }
+  @Post('/signup/google')
+  async signupWithGoogle(
+    @Body()
+    body: signupWithGmailDTO,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { status, credentials } = await this.authService.signupWithGoogle(
+      body.idToken,
+      `${req.protocol}://${req.host}`,
+    );
+    res.status(status);
+    return {
+      message: 'done',
+      data: credentials,
+    };
   }
 }
+
+//
+//@Controller('/auth')
+// export class authController {
+//   constructor(private readonly authService: authService) {}
+//   @Get('/')
+//   hello(
+//     @Req() req: Request,
+//     @Body(
+//       'age',
+//       new ParseIntPipe({
+//         errorHttpStatusCode: 401,
+//         exceptionFactory() {
+//           throw new HttpException('bad request', 400);
+//         },
+//         optional: true,
+//       }),
+//     )
+//     age: number,
+//   ) {
+//     console.log('🚀  ~ hello ~ req:', req, age);
+//     return 'hello';
+//   }
+//   // validation pipe
+//   @UsePipes(
+//     new ValidationPipe({
+//       stopAtFirstError: true,
+//       whitelist: true,
+//       forbidNonWhitelisted: true,
+//     }),
+//   )
+//   @Get('/welcome')
+//   signup(
+//     @Body()
+//     body: signupDTO,
+//     @Query()
+//     query: signupDTO,
+//   ) {
+//     console.log(query);
+
+//     return this.authService.Signup(body);
+//   }
+
+//   // custom validation with zod
+//   @Post('/wel')
+//   login(
+//     @Body(new CustomValidationPipe<loginDTO>(loginSchema.body)) body: loginDTO,
+//   ) {
+//     return this.authService.login(body);
+//   }
+// }

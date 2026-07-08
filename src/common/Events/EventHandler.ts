@@ -1,9 +1,9 @@
 // Events/EventHandler.ts
 
-import EventEmitter from "events";
+import EventEmitter from 'events';
 
 export type EventMap = {
-  "confirm-Email": {
+  'confirm-Email': {
     to: string;
     cc?: string;
     subject: string;
@@ -28,12 +28,14 @@ export class EventHandler {
     eventName: K,
     listener: (payload: EventMap[K]) => Promise<void> | void,
   ) {
-    this.emitter.on(eventName, async (payload) => {
-      try {
-        await listener(payload);
-      } catch (error) {
-        console.error(`Error in event ${eventName}:`, error);
-      }
+    this.emitter.on(eventName, (payload: unknown) => {
+      void (async () => {
+        try {
+          await listener(payload as EventMap[K]);
+        } catch (error) {
+          console.error(`Error in event ${eventName}:`, error);
+        }
+      })();
     });
   }
 }

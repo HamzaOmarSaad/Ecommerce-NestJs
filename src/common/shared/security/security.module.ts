@@ -3,7 +3,7 @@ import { securityService } from './security.service';
 
 @Module({
   imports: [],
-  exports: [securityModule],
+  exports: [securityService],
   controllers: [],
   providers: [securityService],
 })
