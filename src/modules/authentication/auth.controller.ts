@@ -2,6 +2,7 @@ import { authService } from './auth.service';
 import { Body, Controller, Post, Req, Res } from '@nestjs/common';
 import { loginDTO, signupDTO, signupWithGmailDTO } from './dto/auth.dto';
 import type { Request, Response } from 'express';
+import { LoginResponse } from './entities/auth.entities';
 
 @Controller('/auth')
 export class authController {
@@ -19,11 +20,8 @@ export class authController {
     @Body()
     body: loginDTO,
     @Req() req: Request,
-  ) {
-    return {
-      message: 'done',
-      data: await this.authService.login(body, `${req.protocol}://${req.host}`),
-    };
+  ): Promise<LoginResponse> {
+    return await this.authService.login(body, `${req.protocol}://${req.host}`);
   }
   @Post('/signup/google')
   async signupWithGoogle(
@@ -31,16 +29,13 @@ export class authController {
     body: signupWithGmailDTO,
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-  ) {
+  ): Promise<LoginResponse> {
     const { status, credentials } = await this.authService.signupWithGoogle(
       body.idToken,
       `${req.protocol}://${req.host}`,
     );
     res.status(status);
-    return {
-      message: 'done',
-      data: credentials,
-    };
+    return credentials;
   }
 }
 

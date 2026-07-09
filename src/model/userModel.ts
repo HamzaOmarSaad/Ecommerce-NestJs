@@ -7,7 +7,12 @@ import {
   Virtual,
 } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
-import { GenderEnum, providerEnum, RoleEnum } from 'src/common/Enums/enums';
+import {
+  GenderEnum,
+  languageEnum,
+  providerEnum,
+  RoleEnum,
+} from 'src/common/Enums/enums';
 import { HUser, IUser } from 'src/common/interfaces/db.type';
 import { BadRequestException } from '@nestjs/common';
 import { securityModule } from 'src/common/shared/security/security.module';
@@ -102,6 +107,12 @@ export class User implements IUser {
     default: false,
   })
   changedCredentialsTime?: Date | undefined;
+  @Prop({
+    type: String,
+    default: languageEnum.en,
+    enum: languageEnum,
+  })
+  language?: languageEnum;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

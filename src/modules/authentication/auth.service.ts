@@ -24,8 +24,10 @@ import {
 import { CacheService } from 'src/common/shared/redis/caching.service';
 import { securityService } from 'src/common/shared/security/security.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { HUser } from 'src/common/interfaces/db.type';
+import { HUser, IUser } from 'src/common/interfaces/db.type';
 import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
+import { LoginResponse } from './entities/auth.entities';
+import { TokenPayload } from 'google-auth-library';
 
 @Injectable()
 export class authService {
@@ -47,7 +49,7 @@ export class authService {
     email: string;
     subject: emailEnum;
     title: string;
-  }) {
+  }): Promise<void> {
     const blockedKey = this.cacheService.BlockedOtpKeyGenerator({
       email,
       subject,
@@ -117,7 +119,7 @@ export class authService {
       }),
     });
   }
-  public confirmEmailOTP = async ({ email, otp }: confirmEmailDTO) => {
+  public async confirmEmailOTP({ email, otp }: confirmEmailDTO): Promise<void> {
     const key: string = this.cacheService.otpKeyGenerator({
       email,
       subject: emailEnum.confirmEmail,
@@ -150,10 +152,8 @@ export class authService {
     account.isEmailConfirmed = new Date();
     await account.save();
     await this.cacheService.deleteValue({ key });
-
-    return true;
-  };
-  public resendEmailOTP = async ({ email }: resendEmailDTO) => {
+  }
+  public async resendEmailOTP({ email }: resendEmailDTO): Promise<void> {
     // check email correctness
     const account = await this.userRepository.findOne({
       email,
@@ -169,9 +169,14 @@ export class authService {
       title: 'email confirmation',
     });
     return;
-  };
+  }
 
-  public async Signup({ userName, email, password, phone }: signupDTO) {
+  public async Signup({
+    userName,
+    email,
+    password,
+    phone,
+  }: signupDTO): Promise<IUser> {
     const isEmail = await this.userRepository.findOne({ email });
     if (isEmail) {
       throw new BadRequestException('email already exist');
@@ -195,30 +200,32 @@ export class authService {
       title: 'email confirmation',
     });
 
-    return { message: ' signup done login to proceed', user };
+    return user;
   }
-  public async login(inputs: loginDTO, issuer: string) {
+  public async login(inputs: loginDTO, issuer: string): Promise<LoginResponse> {
     const { email, password } = inputs;
-    const IsUser = await this.userRepository.findOne({ email });
-    if (!IsUser) {
+    const user = await this.userRepository.findOne({ email });
+    if (!user) {
       throw new BadRequestException('wrong credential');
     }
     const passMatch = await this.securityService.verifyHashService(
       password,
-      IsUser.password as string,
+      user.password as string,
     );
     if (!passMatch) {
       throw new BadRequestException('wrong credential');
     }
     const { accessToken, refreshToken } =
       await this.tokenService.createLoginTokens({
-        user: IsUser,
+        user: user,
         iss: issuer,
       });
 
-    return { accessToken, refreshToken, user: IsUser };
+    return { accessToken, refreshToken };
   }
-  private async VerifyGoogleAccount(googleToken: string) {
+  private async VerifyGoogleAccount(
+    googleToken: string,
+  ): Promise<TokenPayload> {
     const GoogleClient = new OAuth2Client(this.ConfigService.get('CLIENT_ID'));
 
     const ticket = await GoogleClient.verifyIdToken({
@@ -234,10 +241,7 @@ export class authService {
   public LoginWithGoogle = async (
     googleToken: string,
     iss: string,
-  ): Promise<{
-    accessToken: string;
-    refreshToken: string;
-  }> => {
+  ): Promise<LoginResponse> => {
     const payload = await this.VerifyGoogleAccount(googleToken);
 
     const isEmailExist = await this.userRepository.findByEmail(
@@ -261,7 +265,7 @@ export class authService {
     googleToken: string,
     iss: string,
   ): Promise<{
-    credentials: { accessToken: string; refreshToken: string };
+    credentials: LoginResponse;
     status: number;
   }> => {
     const payload = await this.VerifyGoogleAccount(googleToken);

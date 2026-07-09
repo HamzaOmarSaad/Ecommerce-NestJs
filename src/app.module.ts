@@ -11,6 +11,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { SharedAuthModule } from './common/modules';
+import { s3Service } from './common/utils/s3.service';
 
 @Module({
   imports: [
@@ -56,6 +57,6 @@ import { SharedAuthModule } from './common/modules';
     OrderModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, s3Service],
 })
 export class AppModule {}

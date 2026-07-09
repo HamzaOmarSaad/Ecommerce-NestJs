@@ -19,3 +19,9 @@ export enum redisPurposeEnum {
   OTP = 'OTP',
   revokeToken = 'revokeToken',
 }
+export enum languageEnum {
+  en = 'en',
+  ar = 'ar',
+  fr = 'fr',
+  sp = 'sp',
+}
