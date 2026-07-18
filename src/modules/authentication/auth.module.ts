@@ -4,10 +4,10 @@ import { EmailService } from 'src/common/shared/email/email.service';
 import { securityService } from 'src/common/shared/security/security.service';
 import { authController } from './auth.controller';
 import { authService } from './auth.service';
+import { SharedAuthModule } from 'src/common/modules';
 
 @Module({
-  imports: [],
-  exports: [],
+  imports: [SharedAuthModule],
   controllers: [authController],
   providers: [authService, EmailService, securityService],
 })

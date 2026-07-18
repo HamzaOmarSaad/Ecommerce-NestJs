@@ -1,5 +1,5 @@
-import { User } from 'src/model/userModel';
-import { IUser } from '../interfaces/db.type';
+import { User } from 'src/model/user.model';
+import { IUser } from '../interfaces/user.interface';
 import { DBRepo } from './repo';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';

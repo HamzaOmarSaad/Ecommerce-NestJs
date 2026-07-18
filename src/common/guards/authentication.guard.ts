@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { IAuthRequest } from '../interfaces/auth.type';
+import { IAuthRequest } from '../interfaces/auth.interface';
 import { TokenType } from '../interfaces/token.types';
 import { TokenService } from '../shared/Token/token.service';
 
@@ -13,12 +13,14 @@ export class AuthenticationGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     let request!: IAuthRequest;
     let authorization!: string;
+    // to get token type from meta data
     const inputTokenType =
       this.reflector.get<TokenType>('tokenType', context.getHandler()) ||
       this.reflector.get<TokenType>('tokenType', context.getClass());
     if (!inputTokenType) {
       throw new Error('Token type not specified');
     }
+    // get request value based on the communication type
     switch (context.getType()) {
       case 'http':
         request = context.switchToHttp().getRequest();
@@ -28,6 +30,7 @@ export class AuthenticationGuard implements CanActivate {
     if (!authorization) {
       throw new Error('No token provided');
     }
+    // get token from header and inject in request
     const [start, token] = authorization.split(' ');
 
     if (!token) {

@@ -24,7 +24,7 @@ import {
 import { CacheService } from 'src/common/shared/redis/caching.service';
 import { securityService } from 'src/common/shared/security/security.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { HUser, IUser } from 'src/common/interfaces/db.type';
+import { HUser, IUser } from 'src/common/interfaces/user.interface';
 import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
 import { LoginResponse } from './entities/auth.entities';
 import { TokenPayload } from 'google-auth-library';

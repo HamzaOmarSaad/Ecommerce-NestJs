@@ -10,8 +10,7 @@ import {
 } from '@nestjs/common';
 import { Auth, User } from 'src/common/Decorators';
 import { RoleEnum } from 'src/common/Enums/enums';
-import type { HUser } from 'src/common/interfaces/db.type';
-import { tokenTypeEnum } from 'src/common/interfaces/token.types';
+import type { HUser } from 'src/common/interfaces/user.interface';
 import { UsersService } from './users.service';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import {
@@ -24,7 +23,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
   /**------------------------------user profile-------------------------------------------------------- */
 
-  @Auth([RoleEnum.user], tokenTypeEnum.access)
+  @Auth([RoleEnum.user])
   @Get()
   profile(@User() user: HUser) {
     return user;
@@ -37,7 +36,7 @@ export class UsersController {
       cloudMulter({ validation: fileTypesValidation.image }),
     ),
   )
-  @Auth([RoleEnum.user], tokenTypeEnum.access)
+  @Auth([RoleEnum.user])
   @Patch('/profile-picture')
   profilePicture(
     @User() user: HUser,
@@ -61,7 +60,7 @@ export class UsersController {
       cloudMulter({ validation: fileTypesValidation.image }),
     ),
   )
-  @Auth([RoleEnum.user], tokenTypeEnum.access)
+  @Auth([RoleEnum.user])
   @Patch('/profile-cover-pictures')
   coverPictures(
     @User() user: HUser,

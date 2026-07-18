@@ -1,1 +1,4 @@
-export * from './userModel';
+export * from './user.model';
+export * from './brand.model';
+export * from './category.model';
+export * from './product.model';

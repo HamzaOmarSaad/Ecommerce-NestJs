@@ -1,4 +1,4 @@
-import { securityService } from './../common/shared/security/security.service';
+import { securityService } from '../common/shared/security/security.service';
 import {
   MongooseModule,
   Prop,
@@ -13,7 +13,7 @@ import {
   providerEnum,
   RoleEnum,
 } from 'src/common/Enums/enums';
-import { HUser, IUser } from 'src/common/interfaces/db.type';
+import { HUser, IUser } from 'src/common/interfaces/user.interface';
 import { BadRequestException } from '@nestjs/common';
 import { securityModule } from 'src/common/shared/security/security.module';
 
@@ -23,6 +23,7 @@ import { securityModule } from 'src/common/shared/security/security.module';
   strictQuery: true,
   toJSON: { virtuals: true, getters: true },
   toObject: { virtuals: true, getters: true },
+  collection: 'Users',
 })
 export class User implements IUser {
   @Prop({

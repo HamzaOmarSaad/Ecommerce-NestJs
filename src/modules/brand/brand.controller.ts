@@ -1,9 +1,3 @@
-import { CategoriesService } from './categories.service';
-import { CreateCategoryDto } from './dto/create-category.dto';
-import {
-  UpdateCategoryDto,
-  UpdateCategoryPramsDto,
-} from './dto/update-category.dto';
 import {
   cloudMulter,
   fileTypesValidation,
@@ -20,18 +14,19 @@ import {
   UploadedFile,
   ParseFilePipe,
 } from '@nestjs/common';
+import { BrandService } from './brand.service';
+import { CreateBrandDto } from './dto/create-brand.dto';
+import { UpdateBrandDto, UpdateBrandPramsDto } from './dto/update-brand.dto';
 import { Auth, User } from 'src/common/Decorators';
 import { RoleEnum } from 'src/common/Enums/enums';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { HUser } from 'src/common/interfaces/user.interface';
 import type { IFile } from 'src/common/interfaces/multer.interface';
-import { ICategory } from 'src/common/interfaces/category.interface';
+import { IBrand } from 'src/common/interfaces/brand.interface';
 
-/**------------------------------------------------------------------------------------- */
-
-@Controller('categories')
-export class CategoriesController {
-  constructor(private readonly categoriesService: CategoriesService) {}
+@Controller('brand')
+export class BrandController {
+  constructor(private readonly brandService: BrandService) {}
 
   @Auth([RoleEnum.admin])
   @UseInterceptors(
@@ -42,13 +37,14 @@ export class CategoriesController {
   )
   @Post('/create')
   async create(
-    @Body() createCategoryDto: CreateCategoryDto,
+    @Body() createBrandDto: CreateBrandDto,
     @User() user: HUser,
     @UploadedFile(ParseFilePipe) file: IFile,
   ) {
-    return await this.categoriesService.create(user, createCategoryDto, file);
+    return await this.brandService.create(user, createBrandDto.name, file);
   }
 
+  /**------------------------------------------------------------------------------------- */
   @Auth([RoleEnum.admin])
   @UseInterceptors(
     FileInterceptor(
@@ -56,33 +52,29 @@ export class CategoriesController {
       cloudMulter({ validation: fileTypesValidation.image }),
     ),
   )
-  @Patch(':categoryId')
+  @Patch(':brandId')
   async update(
-    @Param('categoryId') params: UpdateCategoryPramsDto,
-    @Body() updateCategoryDto: UpdateCategoryDto,
+    @Param('brandId') params: UpdateBrandPramsDto,
+    @Body() updateBrandDto: UpdateBrandDto,
     @User() user: HUser,
     @UploadedFile(new ParseFilePipe({ fileIsRequired: false })) file?: IFile,
-  ): Promise<ICategory> {
-    return await this.categoriesService.update(
-      params,
-      updateCategoryDto,
-      user,
-      file,
-    );
+  ): Promise<IBrand> {
+    return await this.brandService.update(params, updateBrandDto, user, file);
   }
+  /**------------------------------------------------------------------------------------- */
 
   @Get()
   findAll() {
-    return this.categoriesService.findAll();
+    return this.brandService.findAll();
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.categoriesService.findOne(+id);
+    return this.brandService.findOne(+id);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.categoriesService.remove(+id);
+    return this.brandService.remove(+id);
   }
 }

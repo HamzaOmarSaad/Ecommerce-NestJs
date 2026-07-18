@@ -5,14 +5,21 @@ import { createClient } from 'redis';
 import { UserRepo } from 'src/common/repos';
 import { CacheService } from 'src/common/shared/redis/caching.service';
 import { TokenService } from 'src/common/shared/Token/token.service';
-import UserModel from 'src/model/userModel';
+import UserModel from 'src/model/user.model';
 import { authController } from 'src/modules/authentication/auth.controller';
 
 @Global()
 @Module({
   imports: [UserModel, JwtModule.register({})],
-  exports: ['REDIS_CLIENT', UserRepo, CacheService, TokenService, JwtService],
-  controllers: [authController],
+  exports: [
+    'REDIS_CLIENT',
+    UserRepo,
+    CacheService,
+    TokenService,
+    JwtService,
+    JwtModule,
+  ],
+  controllers: [],
   providers: [
     {
       provide: 'REDIS_CLIENT',

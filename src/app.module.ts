@@ -12,6 +12,7 @@ import { Connection } from 'mongoose';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { SharedAuthModule } from './common/modules';
 import { s3Service } from './common/utils/s3.service';
+import { BrandModule } from './modules/brand/brand.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { s3Service } from './common/utils/s3.service';
     ProductsModule,
     CategoriesModule,
     OrderModule,
+    BrandModule,
   ],
   controllers: [AppController],
   providers: [AppService, s3Service],

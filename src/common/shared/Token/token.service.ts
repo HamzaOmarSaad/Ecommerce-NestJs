@@ -12,7 +12,7 @@ import {
 import { CacheService } from '../redis/caching.service';
 import { UserRepo } from 'src/common/repos';
 import { RoleEnum } from 'src/common/Enums/enums';
-import { HUser } from 'src/common/interfaces/db.type';
+import { HUser } from 'src/common/interfaces/user.interface';
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()

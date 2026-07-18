@@ -5,7 +5,10 @@ import { storageApproachEnum, uploadFileSizeEnum } from '../Enums/multer.enum';
 import {
   DeleteObjectCommand,
   DeleteObjectCommandOutput,
+  DeleteObjectsCommand,
+  DeleteObjectsCommandOutput,
   GetObjectCommand,
+  ListObjectsV2Command,
   ObjectCannedACL,
   PutObjectCommand,
   S3Client,
@@ -183,16 +186,7 @@ export class s3Service {
 
     return await this.client.send(command);
   }
-  async deleteAsset({
-    Bucket = this.BUCKET_NAME,
-    Key,
-  }: {
-    Bucket?: string;
-    Key: string;
-  }): Promise<DeleteObjectCommandOutput> {
-    const command = new DeleteObjectCommand({ Bucket, Key });
-    return await this.client.send(command);
-  }
+
   async createPreSignedUploadLink({
     Bucket = this.BUCKET_NAME,
     path = 'general',
@@ -238,6 +232,71 @@ export class s3Service {
     const url = await getSignedUrl(this.client, command, { expiresIn });
     return url;
   }
-}
+  async deleteAsset({
+    Bucket = this.BUCKET_NAME,
+    Key,
+  }: {
+    Bucket?: string;
+    Key: string;
+  }): Promise<DeleteObjectCommandOutput> {
+    const command = new DeleteObjectCommand({ Bucket, Key });
+    return await this.client.send(command);
+  }
+  async deleteAssets({
+    Bucket = process.env.S3_BUCKET_NAME,
+    keysToDelete,
+    Quiet = false,
+  }: {
+    Bucket?: string;
+    keysToDelete: string[];
+    Quiet?: boolean;
+  }): Promise<DeleteObjectsCommandOutput> {
+    const mappedKeysToDelete: { Key: string }[] = keysToDelete.map((Key) => {
+      return { Key };
+    });
 
-// Export the class; instantiate via NestJS DI (do not create a global instance here)
+    const command = new DeleteObjectsCommand({
+      Bucket,
+      Delete: {
+        Objects: mappedKeysToDelete,
+        Quiet,
+      },
+    });
+    const result = await this.client.send(command);
+    console.log(result);
+    return result;
+  }
+  listFiles = async ({
+    Bucket = this.BUCKET_NAME,
+    folderKey,
+  }: {
+    Bucket?: string;
+    folderKey: string;
+  }) => {
+    const command = new ListObjectsV2Command({
+      Bucket,
+      Prefix: `${process.env.APPLICATION_NAME}/${folderKey}`,
+    });
+
+    const objectList = await this.client.send(command);
+    console.log({ objectList });
+    return objectList;
+  };
+
+  deleteFolderContent = async ({
+    Bucket = this.BUCKET_NAME,
+    Quiet = false,
+    folderKey,
+  }: {
+    Bucket?: string;
+    Quiet?: boolean;
+    folderKey: string;
+  }) => {
+    const objects = await this.listFiles({ Bucket, folderKey });
+    const keysToDelete: string[] = objects.Contents?.map((obj) => {
+      return obj.Key;
+    }) as string[];
+    console.log({ keysToDelete });
+    return await this.deleteAssets({ Bucket, keysToDelete, Quiet });
+  };
+}

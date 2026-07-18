@@ -4,7 +4,7 @@ import {
   storageApproachEnum,
   uploadFileSizeEnum,
 } from 'src/common/Enums/multer.enum';
-import { HUser, IUser } from 'src/common/interfaces/db.type';
+import { HUser, IUser } from 'src/common/interfaces/user.interface';
 import { IFile } from 'src/common/interfaces/multer.interface';
 
 @Injectable()
