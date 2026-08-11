@@ -58,7 +58,7 @@ export class TokenService {
     try {
       return this.jwtService.signAsync(payload, {
         secret,
-        ...(options as SignOptions),
+        ...options,
       });
     } catch (error) {
       throw new BadRequestException('Token signing failed: ' + error);

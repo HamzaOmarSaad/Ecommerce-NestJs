@@ -50,10 +50,10 @@ export class AppController {
       fileName: string;
     };
     const Key = path.join('/');
-    return (await this.s3Service.createPreSignedFetchLink({
+    return await this.s3Service.createPreSignedFetchLink({
       Key,
       download,
       fileName,
-    })) as string;
+    });
   }
 }

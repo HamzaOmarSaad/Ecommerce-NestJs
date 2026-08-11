@@ -8,6 +8,7 @@ import { TokenService } from 'src/common/shared/Token/token.service';
 import UserModel from 'src/model/user.model';
 import { authController } from 'src/modules/authentication/auth.controller';
 
+// module that export all important exports that can be frequently used so i can imported once rather importing each element in it
 @Global()
 @Module({
   imports: [UserModel, JwtModule.register({})],

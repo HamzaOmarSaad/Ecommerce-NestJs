@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import type { RedisClientType } from '@redis/client';
 import { Types } from 'mongoose';

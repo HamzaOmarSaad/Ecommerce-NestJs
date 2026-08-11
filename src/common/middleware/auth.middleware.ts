@@ -9,6 +9,7 @@ import { Request, Response, NextFunction } from 'express';
 import { TokenService } from '../shared/Token/token.service';
 import { tokenTypeEnum } from '../interfaces/token.types';
 
+// not used guard is better
 @Injectable()
 export class AuthenticationMiddleware implements NestMiddleware {
   constructor(private readonly tokenService: TokenService) {}
