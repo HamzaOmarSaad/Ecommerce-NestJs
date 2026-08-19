@@ -1,8 +1,9 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { IAuthRequest } from '../interfaces/auth.interface';
-import { TokenType } from '../interfaces/token.types';
+import { IAuthRequest, IContextType } from '../interfaces/auth.interface';
+import { TokenType } from '../interfaces/token.interface';
 import { TokenService } from '../shared/Token/token.service';
+import { GqlExecutionContext } from '@nestjs/graphql';
 
 @Injectable()
 export class AuthenticationGuard implements CanActivate {
@@ -21,9 +22,13 @@ export class AuthenticationGuard implements CanActivate {
       throw new Error('Token type not specified');
     }
     // get request value based on the communication type
-    switch (context.getType()) {
+    switch (context.getType<IContextType>()) {
       case 'http':
         request = context.switchToHttp().getRequest();
+        authorization = request.headers['authorization'] as string;
+        break;
+      case 'graphql':
+        request = GqlExecutionContext.create(context).getContext().req;
         authorization = request.headers['authorization'] as string;
         break;
     }

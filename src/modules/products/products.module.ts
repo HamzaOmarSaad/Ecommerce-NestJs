@@ -6,10 +6,18 @@ import { BrandRepo, CategoryRepo, ProductRepo } from 'src/common/repos';
 import { s3Service } from 'src/common/utils/s3.service';
 import CategoryModel from 'src/model/category.model';
 import BrandModel from 'src/model/brand.model';
+import { ProductResolver } from './product.resolver';
 
 @Module({
   imports: [ProductModel, CategoryModel, BrandModel],
   controllers: [ProductsController],
-  providers: [ProductsService, ProductRepo, s3Service, BrandRepo, CategoryRepo],
+  providers: [
+    ProductsService,
+    ProductRepo,
+    s3Service,
+    BrandRepo,
+    CategoryRepo,
+    ProductResolver,
+  ],
 })
 export class ProductsModule {}

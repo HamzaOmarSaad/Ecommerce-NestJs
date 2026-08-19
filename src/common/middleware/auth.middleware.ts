@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { TokenService } from '../shared/Token/token.service';
-import { tokenTypeEnum } from '../interfaces/token.types';
+import { tokenTypeEnum } from '../interfaces/token.interface';
 
 // not used guard is better
 @Injectable()

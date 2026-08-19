@@ -16,6 +16,7 @@ import {
   UseInterceptors,
   ParseFilePipe,
   UploadedFiles,
+  Query,
 } from '@nestjs/common';
 import { Auth, User } from 'src/common/Decorators';
 import { RoleEnum } from 'src/common/Enums/enums';
@@ -30,12 +31,15 @@ import {
   UpdateProductPramsDto,
 } from './dto/update-product.dto';
 import { IProduct } from 'src/common/interfaces/product.interface';
+import { PaginateDto } from 'src/common/DTO';
+import { customCacheInterceptor } from 'src/common/interceptor';
 // import { ICategory } from 'src/common/interfaces/category.interface';
 
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
+  /**-------------------------------------------------------------------------------- */
   @Auth([RoleEnum.admin])
   @UseInterceptors(
     FileFieldsInterceptor(
@@ -55,6 +59,7 @@ export class ProductsController {
   ) {
     return await this.productsService.create(createProductDto, user, files);
   }
+  /**-------------------------------------------------------------------------------- */
 
   @Auth([RoleEnum.admin])
   @UseInterceptors(
@@ -81,15 +86,14 @@ export class ProductsController {
       files,
     );
   }
-  @Get()
-  findAll() {
-    return this.productsService.findAll();
-  }
+  /**-------------------------------------------------------------------------------- */
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productsService.findOne(+id);
+  @UseInterceptors(customCacheInterceptor)
+  @Get()
+  async findAll(@Query() query: PaginateDto) {
+    return await this.productsService.findAll(query);
   }
+  /**-------------------------------------------------------------------------------- */
 
   @Delete(':id')
   remove(@Param('id') id: string) {

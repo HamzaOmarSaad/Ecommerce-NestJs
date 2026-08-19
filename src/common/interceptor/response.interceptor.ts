@@ -9,6 +9,7 @@ import { map } from 'rxjs/operators';
 
 export interface Response<T> {
   data: T;
+  message?: string;
 }
 
 @Injectable()
@@ -18,8 +19,24 @@ export class TransformInterceptor<T> implements NestInterceptor<
 > {
   intercept(
     context: ExecutionContext,
-    next: CallHandler,
+    next: CallHandler<T>,
   ): Observable<Response<T>> {
-    return next.handle().pipe(map((data) => ({ message: 'done ', data })));
+    return next.handle().pipe(
+      map((data: T) => {
+        let res: Response<T> = { data };
+        switch (context.getType()) {
+          case 'http':
+            res = {
+              message: 'done ',
+              data,
+            };
+            break;
+
+          default:
+            break;
+        }
+        return res;
+      }),
+    );
   }
 }

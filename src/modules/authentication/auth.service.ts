@@ -133,7 +133,7 @@ export class authService {
     // check email correctness
     const account = await this.userRepository.findOne({
       email,
-      isEmailConfirmed: { $exists: false },
+      emailConfirmedAt: { $exists: false },
       provider: providerEnum.system,
     });
     if (!account) {
@@ -149,7 +149,7 @@ export class authService {
       throw new BadRequestException(`wrong otp`);
     }
     //confirm email is done
-    account.isEmailConfirmed = new Date();
+    account.emailConfirmedAt = new Date();
     await account.save();
     await this.cacheService.deleteValue({ key });
   }
@@ -157,7 +157,7 @@ export class authService {
     // check email correctness
     const account = await this.userRepository.findOne({
       email,
-      isEmailConfirmed: { $exists: false },
+      emailConfirmedAt: { $exists: false },
       provider: providerEnum.system,
     });
     if (!account) {
@@ -288,7 +288,7 @@ export class authService {
       userName: payload.name as string,
       email: payload.email as string,
       provider: providerEnum.google,
-      isEmailConfirmed: new Date(),
+      emailConfirmedAt: new Date(),
       role: RoleEnum.user,
     };
     const newUser: HUser = await this.userRepository.create(data);

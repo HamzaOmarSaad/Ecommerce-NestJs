@@ -8,7 +8,7 @@ import {
   TokenType,
   tokenTypeEnum,
   TokenVerifyType,
-} from 'src/common/interfaces/token.types';
+} from 'src/common/interfaces/token.interface';
 import { CacheService } from '../redis/caching.service';
 import { UserRepo } from 'src/common/repos';
 import { RoleEnum } from 'src/common/Enums/enums';

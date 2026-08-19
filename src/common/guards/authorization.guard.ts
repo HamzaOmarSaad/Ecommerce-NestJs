@@ -1,7 +1,9 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { RoleEnum } from '../Enums/enums';
-import { HUser } from '../interfaces/user.interface';
+import { HUser, IUser } from '../interfaces/user.interface';
+import { IAuthRequest, IContextType } from '../interfaces/auth.interface';
+import { GqlExecutionContext } from '@nestjs/graphql';
 
 @Injectable()
 export class AuthorizationGuard implements CanActivate {
@@ -13,10 +15,16 @@ export class AuthorizationGuard implements CanActivate {
 
     let user!: HUser;
 
-    switch (context.getType()) {
+    switch (context.getType<IContextType>()) {
       case 'http':
-        user = context.switchToHttp().getRequest().credentials.user;
+        user = context.switchToHttp().getRequest()?.credentials?.user;
         break;
+      case 'graphql': {
+        const req: IAuthRequest =
+          GqlExecutionContext.create(context).getContext().req;
+        user = req?.credentials?.user as HUser;
+        break;
+      }
     }
     if (!user) {
       throw new Error('No user found');

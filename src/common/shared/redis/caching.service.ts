@@ -24,6 +24,9 @@ export class CacheService {
     });
   }
 
+  public getCacheKey(value: string, userId?: string) {
+    return userId ? `REQUEST::${value}::${userId}` : `REQUEST::${value}`;
+  }
   public keyPrefixGenerator = ({
     purpose,
     identifier,
@@ -172,4 +175,9 @@ export class CacheService {
       throw new BadRequestException('redis GetByPrefix Error' + error);
     }
   };
+  async clearCache(url: string, userId: string) {
+    await this.deleteValue({
+      key: this.getCacheKey(url, userId),
+    });
+  }
 }

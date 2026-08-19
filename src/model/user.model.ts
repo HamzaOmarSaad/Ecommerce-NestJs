@@ -96,7 +96,7 @@ export class User implements IUser {
   @Prop({
     type: Date,
   })
-  isEmailConfirmed?: Date | undefined;
+  emailConfirmedAt?: Date | undefined;
 
   @Prop({
     type: Date,

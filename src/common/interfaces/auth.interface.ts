@@ -5,3 +5,5 @@ import { Request } from 'express';
 export interface IAuthRequest extends Request {
   credentials?: { user: HUser; decoded: JwtPayload };
 }
+
+export type IContextType = 'http' | 'ws' | 'rpc' | 'graphql';

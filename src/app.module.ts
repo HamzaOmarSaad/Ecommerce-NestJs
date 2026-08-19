@@ -13,6 +13,11 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { SharedAuthModule } from './common/modules';
 import { s3Service } from './common/utils/s3.service';
 import { BrandModule } from './modules/brand/brand.module';
+import { CacheModule } from '@nestjs/cache-manager';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { join } from 'path';
+import { CouponModule } from './modules/coupon/coupon.module';
 
 @Module({
   imports: [
@@ -23,6 +28,15 @@ import { BrandModule } from './modules/brand/brand.module';
     }),
     EventEmitterModule.forRoot(),
     // .config dont work here */
+
+    CacheModule.register({
+      isGlobal: true,
+      ttl: 10000,
+    }),
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+    }),
 
     //* mongoose config
     MongooseModule.forRootAsync({
@@ -49,6 +63,7 @@ import { BrandModule } from './modules/brand/brand.module';
     CategoriesModule,
     OrderModule,
     BrandModule,
+    CouponModule,
   ],
   controllers: [AppController],
   providers: [AppService, s3Service],

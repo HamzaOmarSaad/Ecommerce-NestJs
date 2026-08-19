@@ -5,13 +5,14 @@ import { createClient } from 'redis';
 import { UserRepo } from 'src/common/repos';
 import { CacheService } from 'src/common/shared/redis/caching.service';
 import { TokenService } from 'src/common/shared/Token/token.service';
+import { CouponModule } from '../../modules/coupon/coupon.module';
+import { ProductGqlModule } from './product-gql/product-gql.module';
 import UserModel from 'src/model/user.model';
-import { authController } from 'src/modules/authentication/auth.controller';
 
 // module that export all important exports that can be frequently used so i can imported once rather importing each element in it
 @Global()
 @Module({
-  imports: [UserModel, JwtModule.register({})],
+  imports: [UserModel, JwtModule.register({}), CouponModule, ProductGqlModule],
   exports: [
     'REDIS_CLIENT',
     UserRepo,

@@ -9,9 +9,11 @@ import {
   UpdateWriteOpResult,
   MongooseUpdateQueryOptions,
   QueryFilter,
+  PopulateOptions,
 } from 'mongoose';
+import { IPaginate } from '../interfaces/paginate.interface';
 
-type Doc<T> = HydratedDocument<T>;
+export type Doc<T> = HydratedDocument<T>;
 
 export class DBRepo<T extends object> {
   constructor(protected readonly model: Model<T>) {}
@@ -22,7 +24,46 @@ export class DBRepo<T extends object> {
     projection?: ProjectionType<T>,
     options?: QueryOptions,
   ): Promise<Doc<T>[]> {
-    return this.model.find(filter, projection, options);
+    const docs = this.model.find(filter, projection, options);
+    if (options?.populate) docs.populate(options.populate as PopulateOptions[]);
+    if (options?.skip) docs.skip(options.skip);
+    if (options?.limit) docs.limit(options.limit);
+
+    return await docs.exec();
+  }
+  async PaginatedFind({
+    filter = {},
+    projection,
+    options = {},
+    page = 0,
+    size = 5,
+  }: {
+    filter?: QueryFilter<T>;
+    projection?: ProjectionType<T>;
+    options?: QueryOptions;
+    page?: number | string | undefined;
+    size?: number | string | undefined;
+  }): Promise<IPaginate<T>> {
+    let count: number = -1;
+    const parsedPage = Number(page) ? parseInt(page as string, 10) : 0;
+    const parsedSize = Number(size) ? parseInt(size as string, 10) : 5;
+
+    if (parsedPage > 0) {
+      options.skip = (parsedPage - 1) * parsedSize;
+      options.limit = parsedSize;
+      count = await this.model.countDocuments(filter);
+    }
+    const docs = await this.model.find(filter, projection, options);
+    return {
+      docs,
+      ...(parsedPage > 0
+        ? {
+            currentPage: parsedPage,
+            size: parsedSize,
+            pages: Math.ceil(count / parsedSize),
+          }
+        : {}),
+    };
   }
 
   // ================= FIND ONE =================
@@ -76,9 +117,18 @@ export class DBRepo<T extends object> {
     update: UpdateQuery<T>,
     options?: QueryOptions,
   ): Promise<Doc<T> | null> {
+    if (Array.isArray(update)) {
+      update.push({ $set: { __v: { $add: ['$__v', 1] } } });
+      return this.model.findOneAndUpdate(filter, update, {
+        new: true,
+        ...options,
+        updatePipeline: true,
+      });
+    }
     return this.model.findOneAndUpdate(filter, update, {
       new: true,
       ...options,
+      $incr: { __v: 1 },
     });
   }
 

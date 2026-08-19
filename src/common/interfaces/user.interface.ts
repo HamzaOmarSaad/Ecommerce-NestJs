@@ -17,9 +17,9 @@ export interface IUser {
   profilePicture?: string;
   profileCoverPicture?: string[];
 
-  isEmailConfirmed?: Date;
-  isDeleted?: Date;
-  isRestored?: Date;
+  emailConfirmedAt?: Date;
+  deletedAt?: Date;
+  restoredAt?: Date;
   changedCredentialsTime?: Date;
 
   role: RoleEnum;

@@ -1,3 +1,4 @@
+import { IPaginate } from './../../common/interfaces/paginate.interface';
 import { IProduct } from './../../common/interfaces/product.interface';
 import {
   BadRequestException,
@@ -17,6 +18,7 @@ import { IFile } from 'src/common/interfaces/multer.interface';
 import { toObjectId } from 'src/common/utils/mongoose.utils';
 import { randomUUID } from 'crypto';
 import { generateSlug } from 'src/common/utils/slug';
+import { PaginateDto } from 'src/common/DTO';
 
 @Injectable()
 export class ProductsService {
@@ -95,13 +97,33 @@ export class ProductsService {
     return product.toJSON();
   }
 
-  findAll() {
-    return `This action returns all products`;
+  async findAll({
+    page,
+    size,
+    search,
+  }: PaginateDto): Promise<IPaginate<IProduct>> {
+    const data = await this.productRepository.PaginatedFind({
+      filter: {
+        ...(search
+          ? {
+              $or: [
+                {
+                  name: { $regex: search, options: 'i' },
+                  description: { $regex: search, options: 'i' },
+                },
+              ],
+            }
+          : {}),
+      },
+      options: {
+        populate: [{ path: 'createdBy' }],
+      },
+      page,
+      size,
+    });
+    return data;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
-  }
   private async deleteAttachments(
     gallery: string[] = [],
     image: string | undefined,

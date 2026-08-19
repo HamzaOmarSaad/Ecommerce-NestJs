@@ -1,5 +1,7 @@
+import { ArgsType, Field, InputType, Int } from '@nestjs/graphql';
 import { Transform } from 'class-transformer';
 import {
+  IsInt,
   IsMongoId,
   IsNotEmpty,
   IsOptional,
@@ -58,4 +60,37 @@ export class CreateProductDto implements Partial<IProduct> {
   brandId?: Types.ObjectId;
   @IsMongoId()
   categoryId?: Types.ObjectId;
+}
+
+// @InputType()
+// no need to destruct type s returned from @Args() while using  @ArgsType()
+@ArgsType()
+export class SayHiDto {
+  @Field(() => String, { nullable: true })
+  @IsString()
+  @IsOptional()
+  name?: string;
+
+  @Field(() => Number)
+  @IsOptional()
+  @IsInt()
+  age?: number;
+}
+
+@ArgsType()
+export class AllProductPaginatedDto {
+  @Field(() => Int, { nullable: true })
+  @IsInt()
+  @IsOptional()
+  @Min(1)
+  page?: number;
+  @Field(() => Int, { nullable: true })
+  @IsInt()
+  @IsOptional()
+  @Min(1)
+  size?: number;
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  search?: string;
 }
